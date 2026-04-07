@@ -1,0 +1,8 @@
+{
+  "name": "Visionary AI Chatbot",
+  "description": "An advanced real-time AI chatbot with multimodal image understanding, OCR, and secure authentication.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

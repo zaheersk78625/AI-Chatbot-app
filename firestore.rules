@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isConversationOwner(conversationId) {
+      return isAuthenticated() && get(/databases/$(database)/documents/conversations/$(conversationId)).data.userId == request.auth.uid;
+    }
+
+    function isValidString(val, maxLen) {
+      return val is string && val.size() <= maxLen;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    // User Profiles
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && 
+        request.resource.data.keys().hasAll(['uid', 'email']) &&
+        isValidString(request.resource.data.email, 255);
+    }
+
+    // Conversations
+    match /conversations/{conversationId} {
+      allow read, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid && 
+        request.resource.data.userId == resource.data.userId; // Prevent ownership change
+      
+      // Messages Subcollection
+      match /messages/{messageId} {
+        allow read: if isConversationOwner(conversationId);
+        allow create: if isConversationOwner(conversationId) && 
+          request.resource.data.keys().hasAll(['sender', 'text', 'timestamp']) &&
+          isValidString(request.resource.data.text, 5000);
+      }
+    }
+  }
+}

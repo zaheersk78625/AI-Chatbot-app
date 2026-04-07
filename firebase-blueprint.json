@@ -1,0 +1,61 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores user-specific settings and metadata.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Unique Firebase Auth UID" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "lastLogin": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "Represents a chat session between a user and the AI.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "createdAt"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A single message within a conversation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "conversationId": { "type": "string" },
+        "sender": { "type": "string", "enum": ["user", "ai"] },
+        "text": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "ocrText": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["conversationId", "sender", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile documents"
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "Chat session metadata"
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "Individual chat messages"
+    }
+  }
+}
